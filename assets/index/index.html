@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" href="data:image/x-icon;base64,">
+	<title>Notes</title>
+	<style>
+		.header {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 50px;
+			background-color: #ffffff;
+			border-bottom: 1px solid #ddd;
+			z-index: 1000;
+			display: flex;
+			align-items: center;
+			padding: 0 20px;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		}
+
+		.header-left {
+			flex: 1;
+			display: flex;
+			align-items: center;
+			gap: 20px;
+		}
+
+		.header-right {
+			display: flex;
+			align-items: center;
+			gap: 20px;
+		}
+
+		body {
+			margin: 0;
+			padding: 0;
+			font-family: "Helvetica Neue", Arial, sans-serif;
+			font-size: 16px;
+			line-height: 1.6;
+		}
+
+		h1, h2, h3, h4, h5, h6 {
+			font-family: "Segoe UI", Arial, sans-serif;
+			line-height: 1.2;
+			margin-top: 1.5em;
+			margin-bottom: 0.5em;
+		}
+
+		h1 {
+			font-size: 2em;
+		}
+
+		h2 {
+			font-size: 1.5em;
+		}
+
+		h3 {
+			font-size: 1.17em;
+		}
+
+		/* base link styles */
+		a {
+			color: #0366d6;
+			text-decoration: none;
+			transition: all 0.2s ease;
+		}
+
+		/* internal note links */
+		a[href^="#"] {
+			border-bottom: 1px dotted #0366d6;
+			padding-bottom: 1px;
+		}
+
+		a[href^="#"]:hover {
+			background-color: rgba(3, 102, 214, 0.08);
+			border-bottom: 1px solid #0366d6;
+			text-decoration: none;
+		}
+
+		/* add dim highlighting when linked-to note already open */
+		a[href^="#"].note-opened {
+			background-color: rgba(3, 102, 214, 0.1);
+			border-radius: 3px;
+			padding: 2px 4px;
+			margin: -2px -4px;
+			border-bottom: none; /* remove the dotted border for opened notes */
+		}
+
+		a[href^="#"].note-opened:hover {
+			background-color: rgba(3, 102, 214, 0.15);
+			text-decoration: none;
+		}
+
+		/* unpublished note links */
+		.unpublished-link {
+			background-color: rgba(128, 128, 128, 0.1);  /* light grey background */
+			border-radius: 3px;
+			padding: 2px 4px;
+			margin: -2px -4px;
+			color: #666;  /* muted text color */
+			cursor: default;  /* regular cursor instead of pointer */
+		}
+
+		.unpublished-link:hover {
+			background-color: rgba(128, 128, 128, 0.15);  /* slightly darker on hover */
+		}
+
+		/* external links */
+		a:not([href^="#"]) {
+			color: #6f42c1; /* Different color for external links */
+			position: relative;
+		}
+
+		a:not([href^="#"]):hover {
+			color: #8a63d2;
+			text-decoration: underline;
+		}
+
+		/* add styles for the metadata */
+		.note-metadata {
+			margin-bottom: 20px;
+			color: #666;
+			font-size: 0.9em;
+			line-height: 1.4;
+		}
+
+		.note-metadata a {
+			color: #666;
+			border-bottom: 1px dotted #666;
+		}
+
+		.note-metadata a:hover {
+			color: #0366d6;
+			border-bottom-color: #0366d6;
+		}
+
+		.permanent-link {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			color: #666;
+			cursor: pointer;
+			border-bottom: 1px dotted #666;
+			transition: all 0.2s ease;
+		}
+
+		.permanent-link:hover {
+			color: #0366d6;
+			border-bottom-color: #0366d6;
+		}
+
+		.permanent-link svg {
+			opacity: 0.7;
+			transition: opacity 0.2s ease;
+		}
+
+		.permanent-link:hover svg {
+			opacity: 1;
+		}
+
+		.toast {
+			position: fixed;
+			bottom: 20px;
+			left: 50%;
+			transform: translateX(-50%);
+			background-color: #333;
+			color: white;
+			padding: 8px 16px;
+			border-radius: 4px;
+			font-size: 14px;
+			z-index: 1000;
+			opacity: 0;
+			transition: opacity 0.2s ease-in-out;
+		}
+
+		.toast.show {
+			opacity: 1;
+		}
+
+		/* header link styles (to override some of the above for header links) */
+		.header a {
+			border-bottom: none;
+			padding-bottom: 0;
+		}
+
+		.header a[href^="#"]:hover {
+			background-color: transparent;
+			color: #0366d6;
+		}
+
+		.panels-container {
+			position: fixed;
+			top: 50px; /* matches header height */
+			left: 0;
+			right: 0;
+			bottom: 0;
+			overflow-y: auto;
+			display: flex;
+			gap: 0;
+		}
+
+		.panel {
+			flex: 0 0 600px;
+			padding: 20px 40px;
+			background: #fff;
+			border-right: 1px solid #ddd;
+			height: 100%;
+			overflow-y: auto;
+			box-sizing: border-box;
+			position: relative; /* adjust for close button positioning */
+			font-size: 1rem;
+			transition: all 0.3s ease;
+			width: 600px;
+		}
+
+		.panel.collapsing {
+			transform-origin: right;
+			transform: scaleX(0);
+			width: 0;
+			flex-basis: 0;
+			padding: 0;
+			margin: 0;
+			border: none;
+			overflow: hidden;
+		}
+
+		.panel h1 {
+			margin-top: 0;
+			font-size: 1.8em;
+			margin-right: 40px; /* adjust heading to accommodate close button */
+		}
+
+		.panel.error {
+			background-color: #fff8f8;
+		}
+
+		.error-message {
+			color: #cc0000;
+			padding: 20px;
+			border: 1px solid #ffcdd2;
+			border-radius: 4px;
+			background-color: #ffebee;
+			margin: 20px 0;
+		}
+
+		.backlinks {
+			margin-top: 40px;
+			padding-top: 20px;
+			border-top: 1px solid #ddd;
+		}
+
+		.close-button {
+			position: absolute;
+			top: 20px;
+			right: 20px;
+			width: 24px;
+			height: 24px;
+			border: none;
+			background: none;
+			cursor: pointer;
+			opacity: 0.5;
+			transition: opacity 0.2s;
+			font-size: 20px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: #666;
+		}
+
+		.close-button:hover {
+			opacity: 1;
+		}
+	</style>
+</head>
+<body>
+	<header class="header">
+		<div class="header-left">
+			<a href="#p=index" class="home-link">Home</a>
+		</div>
+		<div class="header-right">
+			<a href="https://phonetool.amazon.com/users/zmueller" target="_blank">PhoneTool</a>
+		</div>
+	</header>
+
+	<div class="panels-container" id="panels"></div>
+
+	<script>
+		function parseURLFragment(fragment) {
+			if (!fragment) return [];
+			
+			// Remove the leading '#' if present
+			fragment = fragment.startsWith('#') ? fragment.slice(1) : fragment;
+			
+			// Split by '&' to get individual parameters
+			return fragment.split('&').map(param => {
+				// Find the first '=' to split properly
+				const equalIndex = param.indexOf('=');
+				if (equalIndex === -1) {
+					// Handle case where there's no '=' character
+					return { type: 't', value: decodeURIComponent(param) }; // Default to title if no type specified
+				}
+				
+				const type = param.substring(0, equalIndex);
+				const value = param.substring(equalIndex + 1);
+				return { type, value: decodeURIComponent(value) };
+			});
+		}
+
+		async function loadNoteByParameter(type, value) {
+			console.log('Loading note with type:', type, 'value:', value);
+
+			try {
+				let hash;
+				
+				switch (type) {
+					case 't': // Title/slug
+						console.log('Loading by title');
+						const slugResponse = await fetch('/static/mapping/slug-to-uid.json');
+						const slugMap = await slugResponse.json();
+						const uid = slugMap[value];
+						if (!uid) throw new Error(`No note found with title: ${value}`);
+						
+						const uidResponse = await fetch('/static/mapping/uid-to-hash.json');
+						const uidMap = await uidResponse.json();
+						hash = uidMap[uid];
+						break;
+						
+					case 'u': // UUID
+						console.log('Loading by UUID');
+						const uidMapResponse = await fetch('/static/mapping/uid-to-hash.json');
+						const uidHashMap = await uidMapResponse.json();
+						hash = uidHashMap[value];
+						break;
+						
+					case 'p': // Permanent/hash
+						console.log('Loading by hash');
+						hash = value;
+						break;
+						
+					case 'd': // Diff
+						// Handle diff logic separately
+						console.log('Diffs not yet implemented');
+						
+					default:
+						throw new Error(`Unknown parameter type: ${type}`);
+				}
+				
+				if (!hash) throw new Error('Could not resolve note hash');
+				
+				// Load the actual note data
+				const response = await fetch(`/notes/${hash}.json`);
+				if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+				return await response.json();
+				
+			} catch (error) {
+				console.error('Error loading note:', error);
+				return null;
+			}
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		async function loadNote(uid) {
+			try {
+				const response = await fetch(`/notes/${encodeURIComponent(uid)}.json`);
+				if (!response.ok) {
+					if (response.status === 403) {
+						throw new Error('Forbidden');
+					}
+					if (response.status === 404) {
+						throw new Error('Note not found');
+					}
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+				const noteData = await response.json();
+				return noteData;
+			} catch (error) {
+				console.error('Error loading note:', error);
+				return null;
+			}
+		}
+
+		// Define delimiting character
+		const DELIMITER = '|';
+
+		// Function to update URL based on current panel stack
+		function updateURL() {
+			const panels = Array.from(document.querySelectorAll('.panel'));
+			const params = panels.map(panel => {
+				const type = panel.dataset.paramType;
+				const value = panel.dataset.paramValue;
+				return `${type}=${encodeURIComponent(value)}`;
+			});
+			const newURL = '#' + params.join('&');
+			history.pushState(null, '', newURL);
+		}
+
+		// Function to load panels from URL
+		async function loadPanelsFromURL() {
+			// Clear existing panels
+			const container = document.getElementById('panels');
+			container.innerHTML = '';
+			loadedPanels.clear();
+
+			// Get parameters from URL
+			const hash = window.location.hash.slice(1);
+			if (!hash) {
+				// If no hash, load index
+				await addPanel('p', 'index');
+				return;
+			}
+
+			// Load each panel in order
+			const params = parseURLFragment(hash);
+			for (const param of params) {
+				await addPanel(param.type, param.value);
+			}
+		}
+
+		// Store loaded panels to prevent duplicates
+		let loadedPanels = new Set();
+
+		function updateOpenedNoteLinks() {
+			// Get all note links
+			document.querySelectorAll('a[href^="#"]').forEach(link => {
+				const href = link.getAttribute('href').slice(1);
+				const params = parseURLFragment(href);
+				
+				if (params.length > 0) {
+					const { type, value } = params[0];
+					const panelId = `${type}-${value}`;
+					
+					if (loadedPanels.has(panelId)) {
+						link.classList.add('note-opened');
+					} else {
+						link.classList.remove('note-opened');
+					}
+				}
+			});
+		}
+
+		function scrollToPanel(uid) {
+			const panel = document.querySelector(`.panel[data-uid="${uid}"]`);
+			if (panel) {
+				panel.scrollIntoView({ behavior: 'smooth', inline: 'start' });
+			}
+		}
+
+		function createPanel(noteData, position, isError = false) {
+			const panel = document.createElement('div');
+			panel.className = `panel${isError ? ' error' : ''}`;
+			panel.dataset.uid = noteData.uid;
+
+			// Only add close button if it's not the first panel
+			const closeButton = position === 0 ? '' : `
+				<button class="close-button" aria-label="Close panel">×</button>
+			`;
+
+			if (isError) {
+				panel.innerHTML = `
+${closeButton}
+<h1>Error Loading Note</h1>
+<div class="error-message">
+	<p>Unable to load the note "${noteData.uid}".</p>
+	<p>${noteData.errorMessage || 'The note might not exist or you may not have permission to view it.'}</p>
+</div>
+				`;
+			} else {
+				// Only create metadata section if we have either lastUpdated or hash
+				const hasMetadata = noteData.lastUpdated || noteData.hash;
+				
+				// Format the timestamp if it exists
+				const lastUpdatedHtml = noteData.lastUpdated ? `
+					<div>Last updated: ${(() => {
+						const d = new Date(noteData.lastUpdated);
+						const pad = (n) => n.toString().padStart(2, '0');
+						return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+					})()}</div>
+				` : '';
+
+				// Create permanent link if hash exists
+				const permanentLinkHtml = noteData.hash ? `
+					<div title="Click to copy permanent link">
+						<span class="permanent-link" data-permalink="#p=${noteData.hash}" role="button" tabindex="0">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+								<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+							</svg>
+						</span>
+					</div>
+				` : '';
+
+				panel.innerHTML = `
+					${closeButton}
+					<h1>${noteData.title}</h1>
+					${hasMetadata ? `
+						<div class="note-metadata">
+							${lastUpdatedHtml}
+							${permanentLinkHtml}
+						</div>
+						` : ''}
+					<div class="content">${noteData.content}</div>
+					${noteData.backlinks.length ? `
+			<div class="backlinks">
+				<h3>Referenced by:</h3>
+				${noteData.backlinks.map(link => 
+					`<div><a href="#u=${encodeURIComponent(link.uid)}">${link.title}</a></div>`
+				).join('')}
+			</div>
+					` : ''}
+				`;
+			}
+
+			// Add click handlers for links
+			panel.querySelectorAll('a[href^="#"]').forEach(link => {
+				// Remove any existing click handlers first
+				const newLink = link.cloneNode(true);
+				link.parentNode.replaceChild(newLink, link);
+				
+				newLink.addEventListener('click', (e) => {
+					e.preventDefault();
+					e.stopPropagation(); // Stop event bubbling
+					
+					const href = newLink.getAttribute('href').slice(1);
+					console.log('Raw href:', href);
+					
+					const params = parseURLFragment(href);
+					console.log('Parsed params:', params);
+					
+					if (params.length > 0) {
+						const { type, value } = params[0];
+						console.log('Using type:', type, 'value:', value);
+						
+						// If panel is already loaded, scroll to it
+						const panelId = `${type}-${value}`;
+						if (loadedPanels.has(panelId)) {
+							scrollToPanel(panelId);
+						} else {
+							// Wrap in setTimeout to ensure it runs after current call stack
+							setTimeout(() => {
+								addPanel(type, value);
+							}, 0);
+						}
+					}
+				});
+			});
+
+			// Add click handler for close button
+			const closeBtn = panel.querySelector('.close-button');
+			if (closeBtn) {
+				closeBtn.addEventListener('click', async () => {
+					const panelToRemove = panel; // This is the specific panel that was clicked
+					const panelId = `${panelToRemove.dataset.paramType}-${panelToRemove.dataset.paramValue}`;
+					
+					await new Promise(resolve => {
+						const handleTransitionEnd = (e) => {
+							if (e.target === panelToRemove) {
+								panelToRemove.removeEventListener('transitionend', handleTransitionEnd);
+								loadedPanels.delete(panelId);
+								panelToRemove.remove();
+								resolve();
+							}
+						};
+
+						panelToRemove.addEventListener('transitionend', handleTransitionEnd);
+						
+						// Trigger the animation
+						requestAnimationFrame(() => {
+							panelToRemove.classList.add('collapsing');
+						});
+					});
+
+					// Update link highlighting and URL after panel is removed
+					updateOpenedNoteLinks();
+					updateURL();
+				});
+			}
+
+			// Add click handler for permanent link
+			panel.querySelectorAll('.permanent-link').forEach(link => {
+				link.addEventListener('click', async (e) => {
+					e.preventDefault();
+					
+					const permalink = `${window.location.origin}${window.location.pathname}${link.dataset.permalink}`;
+					
+					try {
+						await navigator.clipboard.writeText(permalink);
+						showToast('Permanent link copied to clipboard');
+					} catch (err) {
+						showToast('Failed to copy link to clipboard');
+						console.error('Failed to copy:', err);
+					}
+				});
+			});
+
+			return panel;
+		}
+
+		async function addPanel(paramType, paramValue) {
+			console.log('addPanel called with:', paramType, paramValue);
+
+			// Create a unique identifier for the panel
+			const panelId = `${paramType}-${paramValue}`;
+			
+			// Check if panel is already loaded
+			if (loadedPanels.has(panelId)) {
+				console.log('Panel already loaded, scrolling to:', panelId);
+				scrollToPanel(panelId);
+				return;
+			}
+
+			console.log('Creating new panel:', panelId);
+			try {
+				const noteData = await loadNoteByParameter(paramType, paramValue);
+				if (!noteData) {
+					throw new Error('Note not found');
+				}
+
+				const container = document.getElementById('panels');
+				const panel = createPanel(noteData, loadedPanels.size);
+				
+				// Store parameter information
+				panel.dataset.paramType = paramType;
+				panel.dataset.paramValue = paramValue;
+				
+				container.appendChild(panel);
+				loadedPanels.add(panelId);
+
+				panel.scrollIntoView({ behavior: 'smooth', inline: 'start' });
+				updateOpenedNoteLinks();
+				updateURL();
+				
+			} catch (error) {
+				const container = document.getElementById('panels');
+				
+				// Create error note data with specific messages based on error type
+				const errorNoteData = {
+					uid: panelId,
+					title: 'Error Loading Note',
+					paramType,
+					paramValue
+				};
+
+				const panel = createPanel(errorNoteData, loadedPanels.size, true);
+				
+				// Store parameter information even for error panels
+				panel.dataset.paramType = paramType;
+				panel.dataset.paramValue = paramValue;
+				
+				container.appendChild(panel);
+				loadedPanels.add(panelId);
+
+				panel.scrollIntoView({ behavior: 'smooth', inline: 'start' });
+				updateOpenedNoteLinks();
+				updateURL();
+			}
+		}
+
+		// Add this function to handle showing the toast notification
+		function showToast(message, duration = 2000) {
+			// Remove any existing toast
+			const existingToast = document.querySelector('.toast');
+			if (existingToast) {
+				existingToast.remove();
+			}
+
+			// Create and show new toast
+			const toast = document.createElement('div');
+			toast.className = 'toast';
+			toast.textContent = message;
+			document.body.appendChild(toast);
+
+			// Trigger reflow and add show class
+			toast.offsetHeight;
+			toast.classList.add('show');
+
+			// Remove toast after duration
+			setTimeout(() => {
+				toast.classList.remove('show');
+				setTimeout(() => toast.remove(), 200);
+			}, duration);
+		}
+
+
+
+		// Initial load based on details in URL
+		window.addEventListener('load', () => {
+			loadPanelsFromURL();
+		});
+
+		// Handle browser back/forward buttons
+		window.addEventListener('popstate', () => {
+			loadPanelsFromURL();
+		});
+	</script>
+</body>
+</html>
