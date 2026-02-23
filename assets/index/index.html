@@ -995,8 +995,7 @@ t.set=function(a,b){this.store[a]=b;return this};fa(T.prototype);var sa={encode:
 			panel.className = `panel${isError ? ' error' : ''}`;
 			panel.dataset.uid = noteData.uid;
 
-			// Only add close button if it's not the first panel
-			const closeButton = position === 0 ? '' : `
+			const closeButton = `
 				<button class="close-button" aria-label="Close panel">×</button>
 			`;
 
