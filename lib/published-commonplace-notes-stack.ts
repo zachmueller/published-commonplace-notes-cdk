@@ -18,7 +18,8 @@ export class PublishedCommonplaceNotesStack extends cdk.Stack {
 			bucketName: `published-notes-${this.account}-cpn`,
 			blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
 			encryption: s3.BucketEncryption.S3_MANAGED,
-			removalPolicy: cdk.RemovalPolicy.RETAIN
+			removalPolicy: cdk.RemovalPolicy.RETAIN,
+			versioned: true,
 		});
 
 		// Create the CloudFront distribution
