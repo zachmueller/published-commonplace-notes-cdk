@@ -7,6 +7,7 @@ import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 
 interface PublishedCommonplaceNotesStackProps extends cdk.StackProps {
 	originPath?: string;
+	variantName?: string;
 }
 
 export class PublishedCommonplaceNotesStack extends cdk.Stack {
@@ -14,8 +15,9 @@ export class PublishedCommonplaceNotesStack extends cdk.Stack {
 		super(scope, id, props);
 
 		// Create the S3 bucket with the dynamic name
+		const variantSuffix = props?.variantName ? `-${props.variantName.toLowerCase()}` : '';
 		const bucket = new s3.Bucket(this, 'PublishedNotesBucket', {
-			bucketName: `published-notes-${this.account}-cpn`,
+			bucketName: `published-notes-${this.account}-cpn${variantSuffix}`,
 			blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
 			encryption: s3.BucketEncryption.S3_MANAGED,
 			removalPolicy: cdk.RemovalPolicy.RETAIN,
