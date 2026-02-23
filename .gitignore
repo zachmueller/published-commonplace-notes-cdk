@@ -9,3 +9,6 @@ cdk.out
 
 cdk.context.json
 node_modules/
+
+# Exclude private directory
+private
