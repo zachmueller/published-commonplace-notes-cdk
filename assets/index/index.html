@@ -1010,6 +1010,7 @@ t.set=function(a,b){this.store[a]=b;return this};fa(T.prototype);var sa={encode:
 			const panel = document.createElement('div');
 			panel.className = `panel${isError ? ' error' : ''}`;
 			panel.dataset.uid = noteData.uid;
+			panel.dataset.slug = noteData.slug || '';
 
 			const closeButton = `
 				<button class="close-button" aria-label="Close panel">×</button>

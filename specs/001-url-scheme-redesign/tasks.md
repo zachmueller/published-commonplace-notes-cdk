@@ -54,7 +54,7 @@ Replace the `#type=value&...` builder with the new `#{slug}/{type}{value}/...` b
 
 Ensures the slug data flows from note JSON into the DOM so `updateURL()` can read it.
 
-### Task 2.1 — Update `createPanel()` to store slug on panel element
+### Task 2.1 — Update `createPanel()` to store slug on panel element ✅
 
 **Depends on:** Task 1.2 (updateURL needs `dataset.slug` to exist)
 
