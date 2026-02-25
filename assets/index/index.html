@@ -972,6 +972,11 @@ t.set=function(a,b){this.store[a]=b;return this};fa(T.prototype);var sa={encode:
 
 			// Load each panel in order
 			const params = parseURLFragment(hash);
+			if (params.length === 0) {
+				// Bare slug or empty parameters — fall back to index
+				await addPanel('p', 'index');
+				return;
+			}
 			for (const param of params) {
 				await addPanel(param.type, param.value);
 			}

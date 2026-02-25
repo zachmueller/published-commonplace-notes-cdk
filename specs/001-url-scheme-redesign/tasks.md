@@ -98,7 +98,7 @@ Change permanent link value from `#p=${noteData.hash}` to `#/p${noteData.hash}`.
 
 These functions consume the output of the parser or URL builder and need minor adjustments.
 
-### Task 4.1 — Update `loadPanelsFromURL()`
+### Task 4.1 — Update `loadPanelsFromURL()` ✅
 
 **Depends on:** Task 1.1, Task 1.2
 
@@ -113,7 +113,7 @@ Verify/update fallback behavior:
 
 ---
 
-### Task 4.2 — Verify link click handler in `createPanel()`
+### Task 4.2 — Verify link click handler in `createPanel()` ✅
 
 **Depends on:** Task 1.1, Task 3.1–3.3
 
@@ -124,7 +124,7 @@ The `a[href^="#"]` click handler calls `parseURLFragment(href)`. Verify it works
 
 ---
 
-### Task 4.3 — Verify `updateOpenedNoteLinks()`
+### Task 4.3 — Verify `updateOpenedNoteLinks()` ✅
 
 **Depends on:** Task 1.1, Task 3.1–3.3
 
@@ -134,7 +134,7 @@ This function calls `parseURLFragment()` on each link's `href`. Verify it works 
 
 ---
 
-### Task 4.4 — Verify search result click handler
+### Task 4.4 — Verify search result click handler ✅
 
 **Depends on:** Task 1.2
 
