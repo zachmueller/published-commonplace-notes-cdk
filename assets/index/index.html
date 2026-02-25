@@ -802,23 +802,27 @@ t.set=function(a,b){this.store[a]=b;return this};fa(T.prototype);var sa={encode:
 
 		function parseURLFragment(fragment) {
 			if (!fragment) return [];
-			
+
 			// Remove the leading '#' if present
 			fragment = fragment.startsWith('#') ? fragment.slice(1) : fragment;
-			
-			// Split by '&' to get individual parameters
-			return fragment.split('&').map(param => {
-				// Find the first '=' to split properly
-				const equalIndex = param.indexOf('=');
-				if (equalIndex === -1) {
-					// Handle case where there's no '=' character
-					return { type: 't', value: decodeURIComponent(param) }; // Default to title if no type specified
-				}
-				
-				const type = param.substring(0, equalIndex);
-				const value = param.substring(equalIndex + 1);
-				return { type, value: decodeURIComponent(value) };
-			});
+			if (!fragment) return [];
+
+			let segments;
+
+			if (fragment.charAt(0) === '/') {
+				// No base note name — all segments are parameters
+				segments = fragment.slice(1).split('/').filter(Boolean);
+			} else {
+				// First segment is a decorative slug — discard it
+				const parts = fragment.split('/').filter(Boolean);
+				segments = parts.slice(1); // drop the slug
+			}
+
+			// Each segment: first char = type, rest = value
+			return segments.map(seg => ({
+				type: seg.charAt(0),
+				value: decodeURIComponent(seg.slice(1))
+			}));
 		}
 
 		async function loadNoteByParameter(type, value) {
@@ -924,19 +928,31 @@ t.set=function(a,b){this.store[a]=b;return this};fa(T.prototype);var sa={encode:
 			}
 		}
 
-		// Define delimiting character
-		const DELIMITER = '|';
-
 		// Function to update URL based on current panel stack
-		function updateURL() {
+		function updateURL(useReplaceState = false) {
 			const panels = Array.from(document.querySelectorAll('.panel'));
-			const params = panels.map(panel => {
+
+			if (panels.length === 0) {
+				history.pushState(null, '', window.location.pathname);
+				return;
+			}
+
+			// Build parameter path: /{type}{value} for each panel
+			const paramPath = panels.map(panel => {
 				const type = panel.dataset.paramType;
 				const value = panel.dataset.paramValue;
-				return `${type}=${encodeURIComponent(value)}`;
-			});
-			const newURL = '#' + params.join('&');
-			history.pushState(null, '', newURL);
+				return `/${type}${encodeURIComponent(value)}`;
+			}).join('');
+
+			// Read slug from first panel for the base note name
+			const slug = panels[0].dataset.slug || '';
+			const newURL = slug ? `#${slug}${paramPath}` : `#${paramPath}`;
+
+			if (useReplaceState) {
+				history.replaceState(null, '', newURL);
+			} else {
+				history.pushState(null, '', newURL);
+			}
 		}
 
 		// Function to load panels from URL

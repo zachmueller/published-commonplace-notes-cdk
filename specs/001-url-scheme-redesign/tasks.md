@@ -8,7 +8,7 @@
 
 These are the foundational changes. Everything else depends on the new URL format being parseable and producible.
 
-### Task 1.1 — Rewrite `parseURLFragment()`
+### Task 1.1 — Rewrite `parseURLFragment()` ✅
 
 **Depends on:** Nothing (starting point)
 
@@ -29,7 +29,7 @@ Replace the current `&`/`=`-based parser with the new `/`-delimited, prefix-base
 
 ---
 
-### Task 1.2 — Rewrite `updateURL()`
+### Task 1.2 — Rewrite `updateURL()` ✅
 
 **Depends on:** Task 1.1 (must agree on format)
 
