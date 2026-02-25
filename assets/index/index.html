@@ -598,7 +598,7 @@ a:not([href^="#"]):hover {
 <body>
 	<header class="header">
 		<div class="header-left">
-			<a href="#p=index" class="home-link">Home</a>
+			<a href="#/pindex" class="home-link">Home</a>
 		</div>
 		<div class="header-right">
 			<div class="search-container">
@@ -1041,7 +1041,7 @@ ${closeButton}
 				// Create permanent link if hash exists
 				const permanentLinkHtml = noteData.hash ? `
 					<div title="Click to copy permanent link">
-						<span class="permanent-link" data-permalink="#p=${noteData.hash}" role="button" tabindex="0">
+						<span class="permanent-link" data-permalink="#/p${noteData.hash}" role="button" tabindex="0">
 							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 								<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
 								<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -1064,7 +1064,7 @@ ${closeButton}
 			<div class="backlinks">
 				<h3>Referenced by:</h3>
 				${noteData.backlinks.map(link => 
-					`<div><a href="#u=${encodeURIComponent(link.uid)}">${link.title}</a></div>`
+					`<div><a href="#/u${encodeURIComponent(link.uid)}">${link.title}</a></div>`
 				).join('')}
 			</div>
 					` : ''}

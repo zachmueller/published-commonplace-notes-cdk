@@ -70,7 +70,7 @@ When creating a panel from `noteData`, store `noteData.slug` as `panel.dataset.s
 
 Update all places that construct URLs with the old format. These can be done in parallel but depend on Phase 1 for the format to be consistent.
 
-### Task 3.1 — Update home link
+### Task 3.1 — Update home link ✅
 
 **Depends on:** Task 1.1
 
@@ -78,7 +78,7 @@ Change the header home link from `#p=index` to `#/pindex`.
 
 ---
 
-### Task 3.2 — Update backlink URLs
+### Task 3.2 — Update backlink URLs ✅
 
 **Depends on:** Task 1.1
 
@@ -86,7 +86,7 @@ Change backlink `href` construction from `#u=${encodeURIComponent(link.uid)}` to
 
 ---
 
-### Task 3.3 — Update permanent link data attribute
+### Task 3.3 — Update permanent link data attribute ✅
 
 **Depends on:** Task 1.1
 
