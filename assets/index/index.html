@@ -1103,7 +1103,7 @@ ${closeButton}
 						} else {
 							// Wrap in setTimeout to ensure it runs after current call stack
 							setTimeout(() => {
-								addPanel(type, value);
+								addPanel(type, value, panel);
 							}, 0);
 						}
 					}
@@ -1161,7 +1161,7 @@ ${closeButton}
 			return panel;
 		}
 
-		async function addPanel(paramType, paramValue) {
+		async function addPanel(paramType, paramValue, afterPanel = null) {
 			console.log('addPanel called with:', paramType, paramValue);
 
 			// Create a unique identifier for the panel
@@ -1188,7 +1188,9 @@ ${closeButton}
 				panel.dataset.paramType = paramType;
 				panel.dataset.paramValue = paramValue;
 				
-				container.appendChild(panel);
+				// Insert after the source panel if provided, otherwise append to end
+				const referenceNode = afterPanel ? afterPanel.nextElementSibling : null;
+				container.insertBefore(panel, referenceNode);
 				loadedPanels.add(panelId);
 
 				panel.scrollIntoView({ behavior: 'smooth', inline: 'start' });
@@ -1212,7 +1214,9 @@ ${closeButton}
 				panel.dataset.paramType = paramType;
 				panel.dataset.paramValue = paramValue;
 				
-				container.appendChild(panel);
+				// Insert after the source panel if provided, otherwise append to end
+				const referenceNode = afterPanel ? afterPanel.nextElementSibling : null;
+				container.insertBefore(panel, referenceNode);
 				loadedPanels.add(panelId);
 
 				panel.scrollIntoView({ behavior: 'smooth', inline: 'start' });
